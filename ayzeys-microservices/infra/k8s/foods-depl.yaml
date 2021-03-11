@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-depl
+  name: foods-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth
+      app: foods
   template:
     metadata:
       labels:
-        app: auth
+        app: foods
     spec:
       containers:
-        - name: auth
-          image: ayzeysdev/auth
+        - name: foods
+          image: ayzeysdev/foods
           env:
             - name: MONGO_URI
-              value: 'mongodb://auth-mongo-srv:27017/auth'
+              value: 'mongodb://foods-mongo-srv:27017/foods'
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
@@ -27,12 +27,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-srv
+  name: foods-srv
 spec:
   selector:
-    app: auth
+    app: foods
   ports:
-    - name: auth
+    - name: foods
       protocol: TCP
       port: 3000
       targetPort: 3000

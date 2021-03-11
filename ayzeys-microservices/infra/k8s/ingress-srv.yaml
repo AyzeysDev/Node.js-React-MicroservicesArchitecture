@@ -17,6 +17,13 @@ spec:
                 name: auth-srv
                 port:
                   number: 3000
+          - path: /api/foods/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: foods-srv
+                port:
+                  number: 3000
           - path: /?(.*)
             pathType: Prefix
             backend:
