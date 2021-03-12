@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
 import { requireAuth, validateRequest } from '@akdelivery/custom';
 import { Food } from '../models/foods';
+import { FoodCreatedPublisher } from '../events/publishers/food-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -15,6 +17,14 @@ router.post('/api/foods', requireAuth, [
     const food = Food.build({ name, price, userId: req.currentUser!.id});
 
     await food.save();
+
+    new FoodCreatedPublisher(natsWrapper.client).publish({
+      id: food.id,
+      name: food.name,
+      price: food.price,
+      userId: food.userId,
+      version: food.version,
+    });
 
     res.status(201).send(food);
 });

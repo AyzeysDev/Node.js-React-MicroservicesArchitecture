@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { updateIfCurrentPlugin } from 'mongoose-update-if-current';
 
 interface FoodDetails {
   name: string;
@@ -14,6 +15,8 @@ interface FoodDoc extends mongoose.Document {
   name: string;
   price: number;
   userId: string;
+  version: number;
+  orderId?: string;
 }
 
 const foodSchema = new mongoose.Schema({
@@ -28,6 +31,9 @@ const foodSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true
+  },
+  orderId: {
+    type: String
   }
 }, {
   toJSON: {
@@ -37,6 +43,9 @@ const foodSchema = new mongoose.Schema({
     }
   }
 });
+
+foodSchema.set('versionKey', 'version');
+foodSchema.plugin(updateIfCurrentPlugin);
 
 foodSchema.statics.build = (attrs: FoodDetails) => {
   return new Food(attrs);

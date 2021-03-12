@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { requireAuth, validateRequest, NotFoundError, NotAuthorizedError } from '@akdelivery/custom';
+import { requireAuth, validateRequest, NotFoundError, NotAuthorizedError, BadRequestError } from '@akdelivery/custom';
 import { Food } from '../models/foods';
+import { FoodUpdatedPublisher } from '../events/publishers/food-updated-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -17,6 +19,10 @@ router.put('/api/foods/:id', requireAuth,
     throw new NotFoundError();
   }
 
+  if(food.orderId) {
+    throw new BadRequestError('This food is being ordered by someone else, try again');
+  }
+
   if (food.userId !== req.currentUser!.id) {
     throw new NotAuthorizedError();
   }
@@ -26,6 +32,13 @@ router.put('/api/foods/:id', requireAuth,
     price: req.body.price
   });
   await food.save();
+  new FoodUpdatedPublisher(natsWrapper.client).publish({
+    id: food.id,
+    name: food.name,
+    price: food.price,
+    userId: food.userId,
+    version: food.version,
+  });
 
   res.send(food);
 });
