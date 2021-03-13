@@ -4,7 +4,9 @@ import { Food } from '../models/foods';
 const router = express.Router();
 
 router.get('/api/foods', async (req: Request, res: Response) => {
-  const foods = await Food.find();
+  const foods = await Food.find({
+    orderId: undefined,
+  });
 
   // if(!foods) {
   //   throw new NotFoundError();
